@@ -84,16 +84,21 @@ class ApiService {
     }
     throw Exception("Both API URLs are unreachable");
   }
-
-  Future<bool> updateLanguageFlag(String idNumber, int languageFlag) async {
+  Future<void> updateLanguageFlag(String idNumber, int languageFlag) async {
     for (String apiUrl in apiUrls) {
       try {
-        final response = await http.get(Uri.parse("${apiUrl}V4/Others/Kurt/ArkLinkAPI/kurt_updateLanguage.php?idNumber=$idNumber&languageFlag=$languageFlag"));
+        final response = await http.post(
+          Uri.parse("${apiUrl}V4/Others/Kurt/ArkLinkAPI/kurt_updateLanguage.php"),
+          body: {
+            'idNumber': idNumber,
+            'languageFlag': languageFlag.toString(),
+          },
+        );
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
           if (data["success"] == true) {
-            return true;
+            return;
           } else {
             throw Exception(data["message"]);
           }

@@ -59,12 +59,11 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
     _fetchAndLoadUrl();
     _loadIdNumber();
     _fetchProfile();
-    _loadCurrentLanguageFlag(); // Load the current language flag
+    _loadCurrentLanguageFlag();
 
     // Check for updates
     AutoUpdate.checkForUpdate(context);
   }
-
 
   Future<void> _loadIdNumber() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -88,6 +87,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
             _firstName = profileData["firstName"];
             _surName = profileData["surName"];
             _profilePictureUrl = "${ApiService.apiUrls[0]}V4/11-A%20Employee%20List%20V2/profilepictures/${profileData["picture"]}";
+            _currentLanguageFlag = profileData["languageFlag"];
           });
         }
       } catch (e) {
@@ -197,73 +197,30 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
     });
   }
 
-  Future<void> _updateLanguageFlag(int languageFlag) async {
+  Future<void> _updateLanguageFlag(int flag) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? idNumber = prefs.getString('IDNumber');
 
-    if (idNumber == null) {
-      Fluttertoast.showToast(
-        msg: "ID Number not found in SharedPreferences.",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
-      return;
-    }
+    if (idNumber != null) {
+      setState(() {
+        _currentLanguageFlag = flag;
+      });
+      try {
+        await apiService.updateLanguageFlag(idNumber, flag);
+        await prefs.setInt('languageFlag', flag);
 
-    int? currentLanguageFlag = prefs.getInt('languageFlag');
+        String? currentUrl = await _controller.currentUrl();
 
-    // If the selected flag is already set, do nothing
-    if (currentLanguageFlag == languageFlag) {
-      return;
-    }
-
-    try {
-      bool success = await apiService.updateLanguageFlag(idNumber, languageFlag);
-      if (success) {
-        // Save the updated language flag in SharedPreferences
-        await prefs.setInt('languageFlag', languageFlag);
-
-        setState(() {
-          _currentLanguageFlag = languageFlag;
-        });
-
-        String languageName = languageFlag == 1 ? "English" : "Japanese";
-        Fluttertoast.showToast(
-          msg: "Language updated to $languageName successfully!",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          backgroundColor: Colors.green,
-          textColor: Colors.white,
-          fontSize: 16.0,
-        );
-
-        // Refresh the WebView after updating the language
-        _fetchAndLoadUrl();
-      } else {
-        Fluttertoast.showToast(
-          msg: "Failed to update language flag.",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 16.0,
-        );
+        if (currentUrl != null) {
+          _controller.loadRequest(Uri.parse(currentUrl));
+        } else {
+          _controller.reload();
+        }
+      } catch (e) {
+        print("Error updating language flag: $e");
       }
-    } catch (e) {
-      Fluttertoast.showToast(
-        msg: "Error updating language flag: $e",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -369,19 +326,39 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
                     SizedBox(width: 25),
                     GestureDetector(
                       onTap: () => _updateLanguageFlag(1),
-                      child: Image.asset(
-                        'assets/images/usa.png',
-                        width: 40,
-                        height: 40,
+                      child: Column(
+                        children: [
+                          Image.asset(
+                            'assets/images/usa.png',
+                            width: 40,
+                            height: 40,
+                          ),
+                          if (_currentLanguageFlag == 1)
+                            Container(
+                              height: 2,
+                              width: 40,
+                              color: Colors.blue,
+                            ),
+                        ],
                       ),
                     ),
                     SizedBox(width: 25),
                     GestureDetector(
                       onTap: () => _updateLanguageFlag(2),
-                      child: Image.asset(
-                        'assets/images/japan.png',
-                        width: 40,
-                        height: 40,
+                      child: Column(
+                        children: [
+                          Image.asset(
+                            'assets/images/japan.png',
+                            width: 40,
+                            height: 40,
+                          ),
+                          if (_currentLanguageFlag == 2)
+                            Container(
+                              height: 2,
+                              width: 40,
+                              color: Colors.blue,
+                            ),
+                        ],
                       ),
                     ),
                   ],
