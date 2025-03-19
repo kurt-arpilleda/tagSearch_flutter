@@ -9,31 +9,39 @@ import 'package:open_file/open_file.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class AutoUpdate {
-  static const String versionUrl = "http://126.209.7.246/V4/Others/Kurt/LatestVersionAPK/TagSearch/version.json";
-  static const String apkUrl = "http://126.209.7.246/V4/Others/Kurt/LatestVersionAPK/TagSearch/tagSearch.apk";
+  static const List<String> apiUrls = [
+    "http://126.209.7.246/",
+    "http://192.168.254.163/"
+  ];
+
+  static const String versionPath = "V4/Others/Kurt/LatestVersionAPK/TagSearch/version.json";
+  static const String apkPath = "V4/Others/Kurt/LatestVersionAPK/TagSearch/tagSearch.apk";
 
   static Future<void> checkForUpdate(BuildContext context) async {
-    try {
-      final response = await http.get(Uri.parse(versionUrl));
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> versionInfo = jsonDecode(response.body);
-        final int latestVersionCode = versionInfo["versionCode"];
-        final String latestVersionName = versionInfo["versionName"];
-        final String releaseNotes = versionInfo["releaseNotes"];
+    for (String apiUrl in apiUrls) {
+      try {
+        final response = await http.get(Uri.parse("$apiUrl$versionPath"));
+        if (response.statusCode == 200) {
+          final Map<String, dynamic> versionInfo = jsonDecode(response.body);
+          final int latestVersionCode = versionInfo["versionCode"];
+          final String latestVersionName = versionInfo["versionName"];
+          final String releaseNotes = versionInfo["releaseNotes"];
 
-        PackageInfo packageInfo = await PackageInfo.fromPlatform();
-        int currentVersionCode = int.parse(packageInfo.buildNumber);
+          PackageInfo packageInfo = await PackageInfo.fromPlatform();
+          int currentVersionCode = int.parse(packageInfo.buildNumber);
 
-        if (latestVersionCode > currentVersionCode) {
-          _showUpdateDialog(context, latestVersionName, releaseNotes);
+          if (latestVersionCode > currentVersionCode) {
+            _showUpdateDialog(context, latestVersionName, releaseNotes, apiUrl);
+            break; // Exit the loop if a successful response is received
+          }
         }
+      } catch (e) {
+        print("Error checking for update from $apiUrl: $e");
       }
-    } catch (e) {
-      print("Error checking for update: $e");
     }
   }
 
-  static void _showUpdateDialog(BuildContext context, String versionName, String releaseNotes) {
+  static void _showUpdateDialog(BuildContext context, String versionName, String releaseNotes, String apiUrl) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -58,8 +66,8 @@ class AutoUpdate {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the update dialog
-                _showDownloadProgressDialog(context); // Show the download progress dialog
-                _downloadAndInstallApk(context); // Start the download process
+                _showDownloadProgressDialog(context, apiUrl); // Show the download progress dialog
+                _downloadAndInstallApk(context, apiUrl); // Start the download process
               },
               child: Text("Update"),
             ),
@@ -69,7 +77,7 @@ class AutoUpdate {
     );
   }
 
-  static void _showDownloadProgressDialog(BuildContext context) {
+  static void _showDownloadProgressDialog(BuildContext context, String apiUrl) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -80,7 +88,7 @@ class AutoUpdate {
             mainAxisSize: MainAxisSize.min,
             children: [
               StreamBuilder<int>(
-                stream: _downloadProgressStream,
+                stream: _downloadProgressStream(apiUrl),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     return Column(
@@ -115,8 +123,8 @@ class AutoUpdate {
     );
   }
 
-  static Stream<int> get _downloadProgressStream async* {
-    final request = http.Request('GET', Uri.parse(apkUrl));
+  static Stream<int> _downloadProgressStream(String apiUrl) async* {
+    final request = http.Request('GET', Uri.parse("$apiUrl$apkPath"));
     final http.StreamedResponse response = await request.send();
 
     int totalBytes = response.contentLength ?? 0;
@@ -133,14 +141,14 @@ class AutoUpdate {
     yield 100; // Complete at 100%
   }
 
-  static Future<void> _downloadAndInstallApk(BuildContext context) async {
+  static Future<void> _downloadAndInstallApk(BuildContext context, String apiUrl) async {
     try {
       final Directory? externalDir = await getExternalStorageDirectory();
       if (externalDir != null) {
-        final String apkPath = "${externalDir.path}/tagSearch.apk";
-        final File apkFile = File(apkPath);
+        final String apkFilePath = "${externalDir.path}/tagSearch.apk";
+        final File apkFile = File(apkFilePath);
 
-        final request = http.Request('GET', Uri.parse(apkUrl));
+        final request = http.Request('GET', Uri.parse("$apiUrl$apkPath"));
         final http.StreamedResponse response = await request.send();
 
         if (response.statusCode == 200) {
@@ -149,7 +157,7 @@ class AutoUpdate {
           await fileSink.close();
 
           if (await apkFile.exists()) {
-            _installApk(context, apkPath); // Install the APK after download
+            _installApk(context, apkFilePath); // Install the APK after download
           } else {
             Fluttertoast.showToast(msg: "Failed to save the APK file.");
           }
@@ -187,4 +195,3 @@ class AutoUpdate {
     }
   }
 }
-
