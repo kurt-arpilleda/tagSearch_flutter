@@ -276,139 +276,141 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.zero,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: double.infinity,
-                color: Color(0xFF2053B3),
-                padding: EdgeInsets.only(top: 50, bottom: 20),
-                child: Column(
-                  children: [
-                    Align(
-                      alignment: Alignment.center,
-                      child: CircleAvatar(
-                        radius: 50,
-                        backgroundColor: Colors.white,
-                        backgroundImage: _profilePictureUrl != null
-                            ? NetworkImage(_profilePictureUrl!)
-                            : null,
-                        child: _profilePictureUrl == null
-                            ? FlutterLogo(size: 60)
-                            : null,
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      _firstName != null && _surName != null
-                          ? "$_firstName $_surName"
-                          : "User Name",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  children: [
-                    Text(
-                      "Language",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(width: 25),
-                    GestureDetector(
-                      onTap: () => _updateLanguageFlag(1),
-                      child: Column(
-                        children: [
-                          Image.asset(
-                            'assets/images/usa.png',
-                            width: 40,
-                            height: 40,
-                          ),
-                          if (_currentLanguageFlag == 1)
-                            Container(
-                              height: 2,
-                              width: 40,
-                              color: Colors.blue,
-                            ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: 25),
-                    GestureDetector(
-                      onTap: () => _updateLanguageFlag(2),
-                      child: Column(
-                        children: [
-                          Image.asset(
-                            'assets/images/japan.png',
-                            width: 40,
-                            height: 40,
-                          ),
-                          if (_currentLanguageFlag == 2)
-                            Container(
-                              height: 2,
-                              width: 40,
-                              color: Colors.blue,
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "User",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 5),
-                    TextField(
-                      controller: _idController,
-                      decoration: InputDecoration(
-                        hintText: "ID Number",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
+          child: SingleChildScrollView( // Add this
+            child: Column( // Wrap the existing Column with SingleChildScrollView
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: double.infinity,
+                  color: Color(0xFF2053B3),
+                  padding: EdgeInsets.only(top: 50, bottom: 20),
+                  child: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.center,
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundColor: Colors.white,
+                          backgroundImage: _profilePictureUrl != null
+                              ? NetworkImage(_profilePictureUrl!)
+                              : null,
+                          child: _profilePictureUrl == null
+                              ? FlutterLogo(size: 60)
+                              : null,
                         ),
                       ),
-                    ),
-                    SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _saveIdNumber,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF2053B3),
-                          padding: EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
+                      SizedBox(height: 10),
+                      Text(
+                        _firstName != null && _surName != null
+                            ? "$_firstName $_surName"
+                            : "User Name",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        "Language",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 25),
+                      GestureDetector(
+                        onTap: () => _updateLanguageFlag(1),
+                        child: Column(
+                          children: [
+                            Image.asset(
+                              'assets/images/americanFlag.gif',
+                              width: 40,
+                              height: 40,
+                            ),
+                            if (_currentLanguageFlag == 1)
+                              Container(
+                                height: 2,
+                                width: 40,
+                                color: Colors.blue,
+                              ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 25),
+                      GestureDetector(
+                        onTap: () => _updateLanguageFlag(2),
+                        child: Column(
+                          children: [
+                            Image.asset(
+                              'assets/images/japaneseFlag.gif',
+                              width: 40,
+                              height: 40,
+                            ),
+                            if (_currentLanguageFlag == 2)
+                              Container(
+                                height: 2,
+                                width: 40,
+                                color: Colors.blue,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "User",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 5),
+                      TextField(
+                        controller: _idController,
+                        decoration: InputDecoration(
+                          hintText: "ID Number",
+                          border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        child: Text(
-                          "Save",
-                          style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                      SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _saveIdNumber,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF2053B3),
+                            padding: EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            "Save",
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
