@@ -9,7 +9,7 @@ class ApiService {
     "http://126.209.7.246/"
   ];
 
-  static const Duration requestTimeout = Duration(seconds: 5);
+  static const Duration requestTimeout = Duration(seconds: 30);
 
   Future<http.Response> _makeRequest(Uri uri, {Map<String, String>? headers, Object? body}) async {
     try {
