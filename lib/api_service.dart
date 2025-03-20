@@ -1,34 +1,44 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   static const List<String> apiUrls = [
-    "http://126.209.7.246/",
-    "http://192.168.254.163/"
+    "http://192.168.254.163/",
+    "http://126.209.7.246/"
   ];
 
+  static const Duration requestTimeout = Duration(seconds: 5);
+
+  Future<http.Response> _makeRequest(Uri uri, {Map<String, String>? headers, Object? body}) async {
+    try {
+      final response = await http.get(uri, headers: headers).timeout(requestTimeout);
+      return response;
+    } on TimeoutException {
+      throw Exception("Request timed out");
+    } catch (e) {
+      throw Exception("Failed to make request: $e");
+    }
+  }
+
   Future<String> fetchSoftwareLink(int linkID) async {
-    // Get the ID number from SharedPreferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? idNumber = prefs.getString('IDNumber');
 
     for (String apiUrl in apiUrls) {
       try {
-        final response = await http.get(Uri.parse("${apiUrl}V4/Others/Kurt/ArkLinkAPI/kurt_fetchLink.php?linkID=$linkID"));
+        final uri = Uri.parse("${apiUrl}V4/Others/Kurt/ArkLinkAPI/kurt_fetchLink.php?linkID=$linkID");
+        final response = await _makeRequest(uri);
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
           if (data.containsKey("softwareLink")) {
-            // If the returned softwareLink is a relative path, prepend the base URL
             String relativePath = data["softwareLink"];
-
-            // Append the ID number as a query parameter
             String fullUrl = Uri.parse(apiUrl).resolve(relativePath).toString();
             if (idNumber != null) {
               fullUrl += "?idNumber=$idNumber";
             }
-
             return fullUrl;
           } else {
             throw Exception(data["error"]);
@@ -44,11 +54,12 @@ class ApiService {
   Future<bool> checkIdNumber(String idNumber) async {
     for (String apiUrl in apiUrls) {
       try {
+        final uri = Uri.parse("${apiUrl}V4/Others/Kurt/ArkLinkAPI/kurt_checkIdNumber.php");
         final response = await http.post(
-          Uri.parse("${apiUrl}V4/Others/Kurt/ArkLinkAPI/kurt_checkIdNumber.php"),
+          uri,
           headers: {"Content-Type": "application/json"},
           body: jsonEncode({"idNumber": idNumber}),
-        );
+        ).timeout(requestTimeout);
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
@@ -68,7 +79,8 @@ class ApiService {
   Future<Map<String, dynamic>> fetchProfile(String idNumber) async {
     for (String apiUrl in apiUrls) {
       try {
-        final response = await http.get(Uri.parse("${apiUrl}V4/Others/Kurt/ArkLinkAPI/kurt_fetchProfile.php?idNumber=$idNumber"));
+        final uri = Uri.parse("${apiUrl}V4/Others/Kurt/ArkLinkAPI/kurt_fetchProfile.php?idNumber=$idNumber");
+        final response = await _makeRequest(uri);
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
@@ -84,16 +96,18 @@ class ApiService {
     }
     throw Exception("Both API URLs are unreachable");
   }
+
   Future<void> updateLanguageFlag(String idNumber, int languageFlag) async {
     for (String apiUrl in apiUrls) {
       try {
+        final uri = Uri.parse("${apiUrl}V4/Others/Kurt/ArkLinkAPI/kurt_updateLanguage.php");
         final response = await http.post(
-          Uri.parse("${apiUrl}V4/Others/Kurt/ArkLinkAPI/kurt_updateLanguage.php"),
+          uri,
           body: {
             'idNumber': idNumber,
             'languageFlag': languageFlag.toString(),
           },
-        );
+        ).timeout(requestTimeout);
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);

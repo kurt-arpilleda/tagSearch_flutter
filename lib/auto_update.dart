@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -10,17 +11,20 @@ import 'package:permission_handler/permission_handler.dart';
 
 class AutoUpdate {
   static const List<String> apiUrls = [
-    "http://126.209.7.246/",
-    "http://192.168.254.163/"
+    "http://192.168.254.163/",
+    "http://126.209.7.246/"
   ];
 
   static const String versionPath = "V4/Others/Kurt/LatestVersionAPK/TagSearch/version.json";
   static const String apkPath = "V4/Others/Kurt/LatestVersionAPK/TagSearch/tagSearch.apk";
 
+  static const Duration requestTimeout = Duration(seconds: 5);
+
   static Future<void> checkForUpdate(BuildContext context) async {
     for (String apiUrl in apiUrls) {
       try {
-        final response = await http.get(Uri.parse("$apiUrl$versionPath"));
+        final response = await http.get(Uri.parse("$apiUrl$versionPath")).timeout(requestTimeout);
+
         if (response.statusCode == 200) {
           final Map<String, dynamic> versionInfo = jsonDecode(response.body);
           final int latestVersionCode = versionInfo["versionCode"];
@@ -35,6 +39,9 @@ class AutoUpdate {
             break; // Exit the loop if a successful response is received
           }
         }
+      } on TimeoutException {
+        print("Request to $apiUrl timed out");
+        Fluttertoast.showToast(msg: "Request timed out. Trying fallback URL...");
       } catch (e) {
         print("Error checking for update from $apiUrl: $e");
       }
@@ -124,21 +131,27 @@ class AutoUpdate {
   }
 
   static Stream<int> _downloadProgressStream(String apiUrl) async* {
-    final request = http.Request('GET', Uri.parse("$apiUrl$apkPath"));
-    final http.StreamedResponse response = await request.send();
+    try {
+      final request = http.Request('GET', Uri.parse("$apiUrl$apkPath"));
+      final http.StreamedResponse response = await request.send().timeout(requestTimeout);
 
-    int totalBytes = response.contentLength ?? 0;
-    int downloadedBytes = 0;
+      int totalBytes = response.contentLength ?? 0;
+      int downloadedBytes = 0;
 
-    yield 0; // Start with 0%
+      yield 0; // Start with 0%
 
-    await for (var chunk in response.stream) {
-      downloadedBytes += chunk.length;
-      int progress = ((downloadedBytes / totalBytes) * 100).round();
-      yield progress; // Yield the progress percentage
+      await for (var chunk in response.stream) {
+        downloadedBytes += chunk.length;
+        int progress = ((downloadedBytes / totalBytes) * 100).round();
+        yield progress; // Yield the progress percentage
+      }
+
+      yield 100; // Complete at 100%
+    } on TimeoutException {
+      yield -1; // Indicate timeout error
+    } catch (e) {
+      yield -1; // Indicate other errors
     }
-
-    yield 100; // Complete at 100%
   }
 
   static Future<void> _downloadAndInstallApk(BuildContext context, String apiUrl) async {
@@ -149,7 +162,7 @@ class AutoUpdate {
         final File apkFile = File(apkFilePath);
 
         final request = http.Request('GET', Uri.parse("$apiUrl$apkPath"));
-        final http.StreamedResponse response = await request.send();
+        final http.StreamedResponse response = await request.send().timeout(requestTimeout);
 
         if (response.statusCode == 200) {
           final fileSink = apkFile.openWrite();
@@ -163,6 +176,8 @@ class AutoUpdate {
           }
         }
       }
+    } on TimeoutException {
+      Fluttertoast.showToast(msg: "Download timed out. Please try again.");
     } catch (e) {
       print("Error downloading APK: $e");
       Fluttertoast.showToast(msg: "Failed to download update.");

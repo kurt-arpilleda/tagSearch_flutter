@@ -86,7 +86,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
           setState(() {
             _firstName = profileData["firstName"];
             _surName = profileData["surName"];
-            _profilePictureUrl = "${ApiService.apiUrls[0]}V4/11-A%20Employee%20List%20V2/profilepictures/${profileData["picture"]}";
+            _profilePictureUrl = "${ApiService.apiUrls[1]}V4/11-A%20Employee%20List%20V2/profilepictures/${profileData["picture"]}";
             _currentLanguageFlag = profileData["languageFlag"];
           });
         }
