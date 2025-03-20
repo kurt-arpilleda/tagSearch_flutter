@@ -18,12 +18,10 @@ class AutoUpdate {
   static const String versionPath = "V4/Others/Kurt/LatestVersionAPK/TagSearch/version.json";
   static const String apkPath = "V4/Others/Kurt/LatestVersionAPK/TagSearch/tagSearch.apk";
 
-  static const Duration requestTimeout = Duration(seconds: 2);
-
   static Future<void> checkForUpdate(BuildContext context) async {
     for (String apiUrl in apiUrls) {
       try {
-        final response = await http.get(Uri.parse("$apiUrl$versionPath")).timeout(requestTimeout);
+        final response = await http.get(Uri.parse("$apiUrl$versionPath"));
 
         if (response.statusCode == 200) {
           final Map<String, dynamic> versionInfo = jsonDecode(response.body);
@@ -39,9 +37,6 @@ class AutoUpdate {
             break; // Exit the loop if a successful response is received
           }
         }
-      } on TimeoutException {
-        print("Request to $apiUrl timed out");
-        Fluttertoast.showToast(msg: "Request timed out. Trying fallback URL...");
       } catch (e) {
         print("Error checking for update from $apiUrl: $e");
       }
@@ -133,7 +128,7 @@ class AutoUpdate {
   static Stream<int> _downloadProgressStream(String apiUrl) async* {
     try {
       final request = http.Request('GET', Uri.parse("$apiUrl$apkPath"));
-      final http.StreamedResponse response = await request.send().timeout(requestTimeout);
+      final http.StreamedResponse response = await request.send();
 
       int totalBytes = response.contentLength ?? 0;
       int downloadedBytes = 0;
@@ -147,10 +142,8 @@ class AutoUpdate {
       }
 
       yield 100; // Complete at 100%
-    } on TimeoutException {
-      yield -1; // Indicate timeout error
     } catch (e) {
-      yield -1; // Indicate other errors
+      yield -1; // Indicate errors
     }
   }
 
@@ -162,7 +155,7 @@ class AutoUpdate {
         final File apkFile = File(apkFilePath);
 
         final request = http.Request('GET', Uri.parse("$apiUrl$apkPath"));
-        final http.StreamedResponse response = await request.send().timeout(requestTimeout);
+        final http.StreamedResponse response = await request.send();
 
         if (response.statusCode == 200) {
           final fileSink = apkFile.openWrite();
@@ -176,8 +169,6 @@ class AutoUpdate {
           }
         }
       }
-    } on TimeoutException {
-      Fluttertoast.showToast(msg: "Download timed out. Please try again.");
     } catch (e) {
       print("Error downloading APK: $e");
       Fluttertoast.showToast(msg: "Failed to download update.");

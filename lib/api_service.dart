@@ -9,14 +9,10 @@ class ApiService {
     "http://126.209.7.246/"
   ];
 
-  static const Duration requestTimeout = Duration(seconds: 2);
-
   Future<http.Response> _makeRequest(Uri uri, {Map<String, String>? headers, Object? body}) async {
     try {
-      final response = await http.get(uri, headers: headers).timeout(requestTimeout);
+      final response = await http.get(uri, headers: headers);
       return response;
-    } on TimeoutException {
-      throw Exception("Request timed out");
     } catch (e) {
       throw Exception("Failed to make request: $e");
     }
@@ -59,7 +55,7 @@ class ApiService {
           uri,
           headers: {"Content-Type": "application/json"},
           body: jsonEncode({"idNumber": idNumber}),
-        ).timeout(requestTimeout);
+        );
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
@@ -107,7 +103,7 @@ class ApiService {
             'idNumber': idNumber,
             'languageFlag': languageFlag.toString(),
           },
-        ).timeout(requestTimeout);
+        );
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
