@@ -18,7 +18,7 @@ class AutoUpdate {
   static const String versionPath = "V4/Others/Kurt/LatestVersionAPK/TagSearch/version.json";
   static const String apkPath = "V4/Others/Kurt/LatestVersionAPK/TagSearch/tagSearch.apk";
 
-  static const Duration requestTimeout = Duration(seconds: 30);
+  static const Duration requestTimeout = Duration(seconds: 5);
 
   static Future<void> checkForUpdate(BuildContext context) async {
     for (String apiUrl in apiUrls) {
