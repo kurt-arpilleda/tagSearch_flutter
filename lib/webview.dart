@@ -5,6 +5,7 @@ import 'api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'auto_update.dart';
+import 'package:http/http.dart' as http;
 
 class SoftwareWebViewScreen extends StatefulWidget {
   final int linkID;
@@ -92,10 +93,18 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
       try {
         final profileData = await apiService.fetchProfile(idNumber);
         if (profileData["success"] == true) {
+          String profilePictureFileName = profileData["picture"];
+
+          String primaryUrl = "${ApiService.apiUrls[0]}V4/11-A%20Employee%20List%20V2/profilepictures/$profilePictureFileName";
+          bool isPrimaryUrlValid = await _isImageAvailable(primaryUrl);
+
+          String fallbackUrl = "${ApiService.apiUrls[1]}V4/11-A%20Employee%20List%20V2/profilepictures/$profilePictureFileName";
+          bool isFallbackUrlValid = await _isImageAvailable(fallbackUrl);
+
           setState(() {
             _firstName = profileData["firstName"];
             _surName = profileData["surName"];
-            _profilePictureUrl = "${ApiService.apiUrls[1]}V4/11-A%20Employee%20List%20V2/profilepictures/${profileData["picture"]}";
+            _profilePictureUrl = isPrimaryUrlValid ? primaryUrl : isFallbackUrlValid ? fallbackUrl : null;
             _currentLanguageFlag = profileData["languageFlag"];
           });
         }
@@ -104,6 +113,16 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
       }
     }
   }
+
+  Future<bool> _isImageAvailable(String url) async {
+    try {
+      final response = await http.head(Uri.parse(url)).timeout(Duration(seconds: 2));
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
 
   Future<void> _saveIdNumber() async {
     String newIdNumber = _idController.text.trim();
