@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ApiService {
+class ApiServiceJP {
   static const List<String> apiUrls = [
-    "http://192.168.254.163/",
-    "http://126.209.7.246/"
+    "http://192.168.1.213/",
+    "http://220.157.175.232/"
   ];
 
   static const Duration requestTimeout = Duration(seconds: 2);
@@ -26,7 +26,7 @@ class ApiService {
 
   Future<String> fetchSoftwareLink(int linkID) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? idNumber = prefs.getString('IDNumber');
+    String? idNumber = prefs.getString('IDNumberJP');
 
     for (String apiUrl in apiUrls) {
       try {

@@ -17,11 +17,12 @@ class AutoUpdate {
 
   static const String versionPath = "V4/Others/Kurt/LatestVersionAPK/TagSearch/version.json";
   static const String apkPath = "V4/Others/Kurt/LatestVersionAPK/TagSearch/tagSearch.apk";
+  static const Duration requestTimeout = Duration(seconds: 2);
 
   static Future<void> checkForUpdate(BuildContext context) async {
     for (String apiUrl in apiUrls) {
       try {
-        final response = await http.get(Uri.parse("$apiUrl$versionPath"));
+        final response = await http.get(Uri.parse("$apiUrl$versionPath")).timeout(requestTimeout);
 
         if (response.statusCode == 200) {
           final Map<String, dynamic> versionInfo = jsonDecode(response.body);
@@ -128,7 +129,7 @@ class AutoUpdate {
   static Stream<int> _downloadProgressStream(String apiUrl) async* {
     try {
       final request = http.Request('GET', Uri.parse("$apiUrl$apkPath"));
-      final http.StreamedResponse response = await request.send();
+      final http.StreamedResponse response = await request.send().timeout(requestTimeout);
 
       int totalBytes = response.contentLength ?? 0;
       int downloadedBytes = 0;
@@ -155,7 +156,7 @@ class AutoUpdate {
         final File apkFile = File(apkFilePath);
 
         final request = http.Request('GET', Uri.parse("$apiUrl$apkPath"));
-        final http.StreamedResponse response = await request.send();
+        final http.StreamedResponse response = await request.send().timeout(requestTimeout);
 
         if (response.statusCode == 200) {
           final fileSink = apkFile.openWrite();

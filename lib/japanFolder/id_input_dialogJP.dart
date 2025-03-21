@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'webview.dart';
-import 'api_service.dart'; // Import the ApiService class
-import 'phorjapan.dart'; // Import the PhOrJpScreen
+import 'webviewJP.dart';
+import 'api_serviceJP.dart'; // Import the ApiService class
+import '../phorjapan.dart'; // Import the PhOrJpScreen
 
-class IdInputDialog extends StatefulWidget {
+class IdInputDialogJP extends StatefulWidget {
   @override
   _IdInputDialogState createState() => _IdInputDialogState();
 }
 
-class _IdInputDialogState extends State<IdInputDialog> {
+class _IdInputDialogState extends State<IdInputDialogJP> {
   final TextEditingController _idController = TextEditingController();
   String? _errorText; // To store the error message
-  final ApiService _apiService = ApiService(); // Create an instance of ApiService
+  final ApiServiceJP _apiService = ApiServiceJP(); // Create an instance of ApiService
 
   Future<void> _saveIdNumber(BuildContext context) async {
     String idNumber = _idController.text.trim();
@@ -21,7 +21,7 @@ class _IdInputDialogState extends State<IdInputDialog> {
     if (idNumber.isEmpty) {
       // Set the error message
       setState(() {
-        _errorText = 'ID Number cannot be empty';
+        _errorText = 'ID番号を入力してください';
       });
       return; // Exit the function if the field is empty
     }
@@ -38,25 +38,25 @@ class _IdInputDialogState extends State<IdInputDialog> {
       if (idExists) {
         // Save the ID number to SharedPreferences
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('IDNumber', idNumber);
+        await prefs.setString('IDNumberJP', idNumber);
 
         // Navigate to the WebView screen
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => SoftwareWebViewScreen(linkID: 1),
+            builder: (context) => SoftwareWebViewScreenJP(linkID: 1),
           ),
         );
       } else {
         // If the ID number does not exist, show an error message
         setState(() {
-          _errorText = 'This ID Number does not exist in the employee database.';
+          _errorText = 'このID番号は従業員データベースに存在しません。';
         });
       }
     } catch (e) {
       // Handle any errors that occur during the API call
       setState(() {
-        _errorText = 'Failed to verify ID Number';
+        _errorText = 'ID番号の確認に失敗しました';
       });
     }
   }
@@ -90,17 +90,17 @@ class _IdInputDialogState extends State<IdInputDialog> {
       backgroundColor: Colors.transparent,
       body: Center(
         child: AlertDialog(
-          title: Text('Input your ID Number'),
+          title: Text('ID番号を入力してください'),
           content: TextField(
             controller: _idController,
             decoration: InputDecoration(
-              hintText: 'ID Number',
+              hintText: 'ID番号',
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
               prefixIcon: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Image.asset('assets/images/philippines.png', width: 24, height: 24), // Add the image here
+                child: Image.asset('assets/images/japan.png', width: 24, height: 24), // Add the image here
               ),
               errorText: _errorText, // Show error message if _errorText is not null
             ),
@@ -108,11 +108,11 @@ class _IdInputDialogState extends State<IdInputDialog> {
           actions: [
             TextButton(
               onPressed: () => _navigateBackToPhOrJp(context),
-              child: Text('Back'),
+              child: Text('戻る'),
             ),
             TextButton(
               onPressed: () => _saveIdNumber(context),
-              child: Text('Save'),
+              child: Text('保存'),
             ),
           ],
         ),

@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'api_service.dart';
+import 'api_serviceJP.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'auto_update.dart';
+import '../auto_update.dart';
 
-class SoftwareWebViewScreen extends StatefulWidget {
+class SoftwareWebViewScreenJP extends StatefulWidget {
   final int linkID;
 
-  SoftwareWebViewScreen({required this.linkID});
+  SoftwareWebViewScreenJP({required this.linkID});
 
   @override
   _SoftwareWebViewScreenState createState() => _SoftwareWebViewScreenState();
 }
 
-class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
+class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
   late final WebViewController _controller;
-  final ApiService apiService = ApiService();
+  final ApiServiceJP apiService = ApiServiceJP();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String? _webUrl;
   final TextEditingController _idController = TextEditingController();
@@ -76,7 +76,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
 
   Future<void> _loadIdNumber() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    _savedIdNumber = prefs.getString('IDNumber');
+    _savedIdNumber = prefs.getString('IDNumberJP');
     if (_savedIdNumber != null) {
       setState(() {
         _idController.text = _savedIdNumber!;
@@ -86,7 +86,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
 
   Future<void> _fetchProfile() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? idNumber = prefs.getString('IDNumber');
+    String? idNumber = prefs.getString('IDNumberJP');
 
     if (idNumber != null) {
       try {
@@ -95,7 +95,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
           setState(() {
             _firstName = profileData["firstName"];
             _surName = profileData["surName"];
-            _profilePictureUrl = "${ApiService.apiUrls[1]}V4/11-A%20Employee%20List%20V2/profilepictures/${profileData["picture"]}";
+            _profilePictureUrl = "${ApiServiceJP.apiUrls[1]}V4/11-A%20Employee%20List%20V2/profilepictures/${profileData["picture"]}";
             _currentLanguageFlag = profileData["languageFlag"];
           });
         }
@@ -141,7 +141,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
 
       if (idExists) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('IDNumber', newIdNumber);
+        await prefs.setString('IDNumberJP', newIdNumber);
         _savedIdNumber = newIdNumber;
 
         Fluttertoast.showToast(
@@ -208,7 +208,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
 
   Future<void> _updateLanguageFlag(int flag) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? idNumber = prefs.getString('IDNumber');
+    String? idNumber = prefs.getString('IDNumberJP');
 
     if (idNumber != null) {
       setState(() {
@@ -353,7 +353,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
                               Text(
                                 _firstName != null && _surName != null
                                     ? "$_firstName $_surName"
-                                    : "User Name",
+                                    : "ユーザー名",
                                 style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 18,
@@ -368,7 +368,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
                           child: Row(
                             children: [
                               Text(
-                                "Language",
+                                "言語",
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -422,7 +422,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "User",
+                                "ユーザー",
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -432,7 +432,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
                               TextField(
                                 controller: _idController,
                                 decoration: InputDecoration(
-                                  hintText: "ID Number",
+                                  hintText: "ID番号",
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -451,7 +451,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
                                     ),
                                   ),
                                   child: Text(
-                                    "Save",
+                                    "保存",
                                     style: TextStyle(color: Colors.white, fontSize: 16),
                                   ),
                                 ),
@@ -468,13 +468,13 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
                   child: Row(
                     children: [
                       Text(
-                        "Country",
+                        "国",
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(width: 25),
+                      SizedBox(width: 30),
                       GestureDetector(
                         onTap: () => _updatePhOrJp("ph"),
                         child: Column(
