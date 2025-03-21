@@ -430,7 +430,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
                                   ],
                                 ),
                               ),
-                              SizedBox(width: 30),
+                              SizedBox(width: 25),
                               GestureDetector(
                                 onTap: () => _updateLanguageFlag(2),
                                 child: Column(
@@ -530,7 +530,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
                           ],
                         ),
                       ),
-                      SizedBox(width: 30),
+                      SizedBox(width: 25),
                       GestureDetector(
                         onTap: () => _updatePhOrJp("jp"),
                         child: Column(
