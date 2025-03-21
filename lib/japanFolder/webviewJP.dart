@@ -283,7 +283,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
               child: IconButton(
                 icon: Icon(
                   Icons.settings,
-                  color: Colors.white,
+                  color: Colors.redAccent,
                 ),
                 onPressed: () {
                   _scaffoldKey.currentState?.openDrawer();

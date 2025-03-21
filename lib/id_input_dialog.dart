@@ -106,9 +106,10 @@ class _IdInputDialogState extends State<IdInputDialog> {
             ),
           ),
           actions: [
-            TextButton(
+            TextButton.icon(
               onPressed: () => _navigateBackToPhOrJp(context),
-              child: Text('Back'),
+              icon: Icon(Icons.arrow_back),
+              label: Text('Back'),
             ),
             TextButton(
               onPressed: () => _saveIdNumber(context),
