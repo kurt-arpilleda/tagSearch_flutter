@@ -12,7 +12,7 @@ class IdInputDialogJP extends StatefulWidget {
 class _IdInputDialogState extends State<IdInputDialogJP> {
   final TextEditingController _idController = TextEditingController();
   String? _errorText; // To store the error message
-  final ApiServiceJP _apiService = ApiServiceJP(); // Create an instance of ApiService
+  final ApiService _apiService = ApiService(); // Create an instance of ApiService
 
   Future<void> _saveIdNumber(BuildContext context) async {
     String idNumber = _idController.text.trim();

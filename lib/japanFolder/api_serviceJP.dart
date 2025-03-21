@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ApiServiceJP {
+class ApiService {
   static const List<String> apiUrls = [
     "http://192.168.1.213/",
     "http://220.157.175.232/"

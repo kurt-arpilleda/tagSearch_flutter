@@ -30,7 +30,6 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
   int? _currentLanguageFlag; // Track the current language flag
   double _progress = 0; // Track the loading progress
   String? _phOrJp; // Track the current country (ph or jp)
-  bool _loadFailed = false; // Track if the load failed
 
   @override
   void initState() {
@@ -43,7 +42,6 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
             setState(() {
               _isLoading = true;
               _progress = 0;
-              _loadFailed = false;
             });
           },
           onProgress: (int progress) {
@@ -57,25 +55,17 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
               _progress = 1;
             });
           },
-          onWebResourceError: (WebResourceError error) {
-            setState(() {
-              _isLoading = false;
-              _loadFailed = true;
-            });
-          },
         ),
       );
 
-    _fetchAllData(); // Fetch all data on initialization
-  }
+    _fetchAndLoadUrl();
+    _loadIdNumber();
+    _fetchProfile();
+    _loadCurrentLanguageFlag();
+    _loadPhOrJp();
 
-  // Fetch all necessary data
-  Future<void> _fetchAllData() async {
-    await _fetchAndLoadUrl(); // Fetch the web URL
-    await _loadIdNumber(); // Load the saved ID number
-    await _fetchProfile(); // Fetch the user profile
-    await _loadCurrentLanguageFlag(); // Load the current language flag
-    await _loadPhOrJp(); // Load the current country (ph or jp)
+    // Check for updates
+    AutoUpdate.checkForUpdate(context);
   }
 
   Future<void> _loadPhOrJp() async {
@@ -133,6 +123,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
     }
   }
 
+
   Future<void> _saveIdNumber() async {
     String newIdNumber = _idController.text.trim();
 
@@ -181,7 +172,8 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
           fontSize: 16.0,
         );
 
-        _fetchAllData(); // Refetch all data after saving the ID number
+        _fetchAndLoadUrl();
+        _fetchProfile(); // Refresh profile data
       } else {
         Fluttertoast.showToast(
           msg: "This ID Number does not exist in the employee database.",
@@ -218,15 +210,11 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
       if (mounted) {
         setState(() {
           _webUrl = url;
-          _loadFailed = false;
         });
         _controller.loadRequest(Uri.parse(url));
       }
     } catch (e) {
       debugPrint("Error fetching link: $e");
-      setState(() {
-        _loadFailed = true;
-      });
     }
   }
 
@@ -552,7 +540,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
         ),
         body: Stack(
           children: [
-            if (_webUrl != null && !_loadFailed)
+            if (_webUrl != null)
               WebViewWidget(controller: _controller),
             if (_isLoading)
               LinearProgressIndicator(
@@ -560,26 +548,10 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
                 backgroundColor: Colors.grey[300],
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
               ),
-            if (_loadFailed)
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.refresh, size: 50, color: Colors.blue),
-                      onPressed: _fetchAllData, // Refetch all data on reload
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      "Failed to load. Tap to retry.",
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
           ],
         ),
       ),
     );
   }
 }
+

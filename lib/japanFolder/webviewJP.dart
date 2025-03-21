@@ -18,7 +18,7 @@ class SoftwareWebViewScreenJP extends StatefulWidget {
 
 class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
   late final WebViewController _controller;
-  final ApiServiceJP apiService = ApiServiceJP();
+  final ApiService apiService = ApiService();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String? _webUrl;
   final TextEditingController _idController = TextEditingController();
@@ -30,7 +30,6 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
   int? _currentLanguageFlag; // Track the current language flag
   double _progress = 0; // Track the loading progress
   String? _phOrJp; // Track the current country (ph or jp)
-  bool _loadFailed = false; // Track if the load failed
 
   @override
   void initState() {
@@ -43,7 +42,6 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
             setState(() {
               _isLoading = true;
               _progress = 0;
-              _loadFailed = false;
             });
           },
           onProgress: (int progress) {
@@ -57,24 +55,19 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
               _progress = 1;
             });
           },
-          onWebResourceError: (WebResourceError error) {
-            setState(() {
-              _isLoading = false;
-              _loadFailed = true;
-            });
-          },
         ),
       );
 
-    _fetchAllData(); // Fetch all data on initialization
+    _fetchAndLoadUrl();
+    _loadIdNumber();
+    _fetchProfile();
+    _loadCurrentLanguageFlag();
+    _loadPhOrJp();
+
+    // Check for updates
+    AutoUpdate.checkForUpdate(context);
   }
-  Future<void> _fetchAllData() async {
-    await _fetchAndLoadUrl(); // Fetch the web URL
-    await _loadIdNumber(); // Load the saved ID number
-    await _fetchProfile(); // Fetch the user profile
-    await _loadCurrentLanguageFlag(); // Load the current language flag
-    await _loadPhOrJp(); // Load the current country (ph or jp)
-  }
+
   Future<void> _loadPhOrJp() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -102,10 +95,10 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
         if (profileData["success"] == true) {
           String profilePictureFileName = profileData["picture"];
 
-          String primaryUrl = "${ApiServiceJP.apiUrls[0]}V4/11-A%20Employee%20List%20V2/profilepictures/$profilePictureFileName";
+          String primaryUrl = "${ApiService.apiUrls[0]}V4/11-A%20Employee%20List%20V2/profilepictures/$profilePictureFileName";
           bool isPrimaryUrlValid = await _isImageAvailable(primaryUrl);
 
-          String fallbackUrl = "${ApiServiceJP.apiUrls[1]}V4/11-A%20Employee%20List%20V2/profilepictures/$profilePictureFileName";
+          String fallbackUrl = "${ApiService.apiUrls[1]}V4/11-A%20Employee%20List%20V2/profilepictures/$profilePictureFileName";
           bool isFallbackUrlValid = await _isImageAvailable(fallbackUrl);
 
           setState(() {
@@ -129,6 +122,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
       return false;
     }
   }
+
 
   Future<void> _saveIdNumber() async {
     String newIdNumber = _idController.text.trim();
@@ -170,7 +164,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
         _savedIdNumber = newIdNumber;
 
         Fluttertoast.showToast(
-          msg: "ID Number saved successfully!",
+          msg: "ID番号が正常に保存されました！",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           backgroundColor: Colors.green,
@@ -178,10 +172,11 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
           fontSize: 16.0,
         );
 
-        _fetchAllData(); // Refetch all data after saving the ID number
+        _fetchAndLoadUrl();
+        _fetchProfile(); // Refresh profile data
       } else {
         Fluttertoast.showToast(
-          msg: "This ID Number does not exist in the employee database.",
+          msg: "このID番号は従業員データベースに存在しません。",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           backgroundColor: Colors.red,
@@ -195,7 +190,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
       }
     } catch (e) {
       Fluttertoast.showToast(
-        msg: "ID番号の確認に失敗しました",
+        msg: "ID番号の確認に失敗しました。",
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         backgroundColor: Colors.red,
@@ -215,15 +210,11 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
       if (mounted) {
         setState(() {
           _webUrl = url;
-          _loadFailed = false;
         });
         _controller.loadRequest(Uri.parse(url));
       }
     } catch (e) {
       debugPrint("Error fetching link: $e");
-      setState(() {
-        _loadFailed = true;
-      });
     }
   }
 
@@ -311,7 +302,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
               child: IconButton(
                 icon: Icon(
                   Icons.settings,
-                  color: Colors.orangeAccent,
+                  color: Colors.white,
                 ),
                 onPressed: () {
                   _scaffoldKey.currentState?.openDrawer();
@@ -396,7 +387,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
                           child: Row(
                             children: [
                               Text(
-                                "言語",
+                                "Language",
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -421,7 +412,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
                                   ],
                                 ),
                               ),
-                              SizedBox(width: 25),
+                              SizedBox(width: 30),
                               GestureDetector(
                                 onTap: () => _updateLanguageFlag(2),
                                 child: Column(
@@ -450,7 +441,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "ユーザー",
+                                "User",
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -521,7 +512,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
                           ],
                         ),
                       ),
-                      SizedBox(width: 25),
+                      SizedBox(width: 30),
                       GestureDetector(
                         onTap: () => _updatePhOrJp("jp"),
                         child: Column(
@@ -549,7 +540,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
         ),
         body: Stack(
           children: [
-            if (_webUrl != null && !_loadFailed)
+            if (_webUrl != null)
               WebViewWidget(controller: _controller),
             if (_isLoading)
               LinearProgressIndicator(
@@ -557,26 +548,10 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
                 backgroundColor: Colors.grey[300],
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
               ),
-            if (_loadFailed)
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.refresh, size: 50, color: Colors.blue),
-                      onPressed: _fetchAllData, // Refetch all data on reload
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      "読み込みに失敗しました。タップして再試行してください。",
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
           ],
         ),
       ),
     );
   }
 }
+
