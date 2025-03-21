@@ -579,7 +579,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
                     ),
                     SizedBox(height: 10),
                     Text(
-                      _isReloading ? "Reloading..." : "Failed to load. Tap to retry.",
+                      _isReloading ? "再読み込み中…" : "読み込みに失敗しました。タップして再試行してください。",
                       style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                   ],
