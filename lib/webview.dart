@@ -30,6 +30,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
   int? _currentLanguageFlag; // Track the current language flag
   double _progress = 0; // Track the loading progress
   String? _phOrJp; // Track the current country (ph or jp)
+  bool _loadFailed = false; // Track if the load failed
 
   @override
   void initState() {
@@ -42,6 +43,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
             setState(() {
               _isLoading = true;
               _progress = 0;
+              _loadFailed = false;
             });
           },
           onProgress: (int progress) {
@@ -55,19 +57,33 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
               _progress = 1;
             });
           },
+          onWebResourceError: (WebResourceError error) {
+            setState(() {
+              _isLoading = false;
+              _loadFailed = true;
+            });
+          },
         ),
       );
 
-    _fetchAndLoadUrl();
-    _loadIdNumber();
-    _fetchProfile();
-    _loadCurrentLanguageFlag();
-    _loadPhOrJp();
-
-    // Check for updates
-    AutoUpdate.checkForUpdate(context);
+    _fetchAllData(); // Fetch all data on initialization
   }
+  bool _isReloading = false;
+  Future<void> _fetchAllData() async {
+    setState(() {
+      _isReloading = true; // Start loading
+    });
 
+    await _fetchAndLoadUrl(); // Fetch the web URL
+    await _loadIdNumber(); // Load the saved ID number
+    await _fetchProfile(); // Fetch the user profile
+    await _loadCurrentLanguageFlag(); // Load the current language flag
+    await _loadPhOrJp(); // Load the current country (ph or jp)
+
+    setState(() {
+      _isReloading = false; // Stop loading
+    });
+  }
   Future<void> _loadPhOrJp() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -123,7 +139,6 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
     }
   }
 
-
   Future<void> _saveIdNumber() async {
     String newIdNumber = _idController.text.trim();
 
@@ -172,8 +187,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
           fontSize: 16.0,
         );
 
-        _fetchAndLoadUrl();
-        _fetchProfile(); // Refresh profile data
+        _fetchAllData(); // Refetch all data after saving the ID number
       } else {
         Fluttertoast.showToast(
           msg: "This ID Number does not exist in the employee database.",
@@ -210,11 +224,15 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
       if (mounted) {
         setState(() {
           _webUrl = url;
+          _loadFailed = false;
         });
         _controller.loadRequest(Uri.parse(url));
       }
     } catch (e) {
       debugPrint("Error fetching link: $e");
+      setState(() {
+        _loadFailed = true;
+      });
     }
   }
 
@@ -540,13 +558,32 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
         ),
         body: Stack(
           children: [
-            if (_webUrl != null)
+            if (_webUrl != null && !_loadFailed)
               WebViewWidget(controller: _controller),
             if (_isLoading)
               LinearProgressIndicator(
                 value: _progress,
                 backgroundColor: Colors.grey[300],
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+              ),
+            if (_loadFailed)
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _isReloading
+                        ? CircularProgressIndicator(color: Colors.blue) // Show loading spinner
+                        : IconButton(
+                      icon: Icon(Icons.refresh, size: 50, color: Colors.blue),
+                      onPressed: _fetchAllData, // Refetch all data on reload
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      _isReloading ? "Reloading..." : "Failed to load. Tap to retry.",
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                  ],
+                ),
               ),
           ],
         ),
