@@ -387,7 +387,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
                           child: Row(
                             children: [
                               Text(
-                                "Language",
+                                "言語",
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -441,7 +441,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "User",
+                                "ユーザー",
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
