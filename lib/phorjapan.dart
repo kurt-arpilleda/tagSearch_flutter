@@ -11,9 +11,25 @@ class PhOrJpScreen extends StatelessWidget {
     await prefs.setString('phorjp', value);
 
     if (value == 'ph') {
-      _navigateWithTransition(context, IdInputDialog());
+      // Check if IDNumber already exists in SharedPreferences
+      String? idNumber = prefs.getString('IDNumber');
+      if (idNumber != null && idNumber.isNotEmpty) {
+        // Navigate directly to WebView
+        _navigateWithTransition(context, SoftwareWebViewScreen(linkID: 1));
+      } else {
+        // Navigate to IdInputDialog
+        _navigateWithTransition(context, IdInputDialog());
+      }
     } else if (value == 'jp') {
-      _navigateWithTransition(context, IdInputDialogJP());
+      // Check if IDNumber already exists in SharedPreferences
+      String? idNumber = prefs.getString('IDNumberJP');
+      if (idNumber != null && idNumber.isNotEmpty) {
+        // Navigate directly to WebViewJP
+        _navigateWithTransition(context, SoftwareWebViewScreenJP(linkID: 1));
+      } else {
+        // Navigate to IdInputDialogJP
+        _navigateWithTransition(context, IdInputDialogJP());
+      }
     }
   }
 
