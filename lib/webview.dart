@@ -68,22 +68,16 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
 
     _fetchAllData(); // Fetch all data on initialization
   }
-  bool _isReloading = false;
-  Future<void> _fetchAllData() async {
-    setState(() {
-      _isReloading = true; // Start loading
-    });
 
+  // Fetch all necessary data
+  Future<void> _fetchAllData() async {
     await _fetchAndLoadUrl(); // Fetch the web URL
     await _loadIdNumber(); // Load the saved ID number
     await _fetchProfile(); // Fetch the user profile
     await _loadCurrentLanguageFlag(); // Load the current language flag
     await _loadPhOrJp(); // Load the current country (ph or jp)
-
-    setState(() {
-      _isReloading = false; // Stop loading
-    });
   }
+
   Future<void> _loadPhOrJp() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -430,7 +424,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
                                   ],
                                 ),
                               ),
-                              SizedBox(width: 25),
+                              SizedBox(width: 30),
                               GestureDetector(
                                 onTap: () => _updateLanguageFlag(2),
                                 child: Column(
@@ -530,7 +524,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
                           ],
                         ),
                       ),
-                      SizedBox(width: 25),
+                      SizedBox(width: 30),
                       GestureDetector(
                         onTap: () => _updatePhOrJp("jp"),
                         child: Column(
@@ -571,15 +565,13 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _isReloading
-                        ? CircularProgressIndicator(color: Colors.blue) // Show loading spinner
-                        : IconButton(
+                    IconButton(
                       icon: Icon(Icons.refresh, size: 50, color: Colors.blue),
                       onPressed: _fetchAllData, // Refetch all data on reload
                     ),
                     SizedBox(height: 10),
                     Text(
-                      _isReloading ? "Reloading..." : "Failed to load. Tap to retry.",
+                      "Failed to load. Tap to retry.",
                       style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                   ],

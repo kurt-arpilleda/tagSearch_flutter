@@ -68,21 +68,12 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
 
     _fetchAllData(); // Fetch all data on initialization
   }
-  bool _isReloading = false;
   Future<void> _fetchAllData() async {
-    setState(() {
-      _isReloading = true; // Start loading
-    });
-
     await _fetchAndLoadUrl(); // Fetch the web URL
     await _loadIdNumber(); // Load the saved ID number
     await _fetchProfile(); // Fetch the user profile
     await _loadCurrentLanguageFlag(); // Load the current language flag
     await _loadPhOrJp(); // Load the current country (ph or jp)
-
-    setState(() {
-      _isReloading = false; // Stop loading
-    });
   }
   Future<void> _loadPhOrJp() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -571,15 +562,13 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _isReloading
-                        ? CircularProgressIndicator(color: Colors.blue) // Show loading spinner
-                        : IconButton(
+                    IconButton(
                       icon: Icon(Icons.refresh, size: 50, color: Colors.blue),
                       onPressed: _fetchAllData, // Refetch all data on reload
                     ),
                     SizedBox(height: 10),
                     Text(
-                      _isReloading ? "再読み込み中…" : "読み込みに失敗しました。タップして再試行してください。",
+                      "読み込みに失敗しました。タップして再試行してください。",
                       style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                   ],
