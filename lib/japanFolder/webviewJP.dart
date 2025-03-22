@@ -294,51 +294,53 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
         resizeToAvoidBottomInset: false,
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(kToolbarHeight - 20),
-          child: AppBar(
-            backgroundColor: Color(0xFF2053B3),
-            centerTitle: true,
-            toolbarHeight: kToolbarHeight - 20,
-            leading: Padding(
-              padding: const EdgeInsets.only(left: 10.0),
-              child: IconButton(
-                icon: Icon(
-                  Icons.settings,
-                  color: Colors.white,
-                ),
-                onPressed: () {
-                  _scaffoldKey.currentState?.openDrawer();
-                },
-              ),
-            ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 10.0),
+          child: SafeArea(
+            child: AppBar(
+              backgroundColor: Color(0xFF2053B3),
+              centerTitle: true,
+              toolbarHeight: kToolbarHeight - 20,
+              leading: Padding(
+                padding: const EdgeInsets.only(left: 10.0),
                 child: IconButton(
-                  icon: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.red,
-                    ),
-                    alignment: Alignment.center,
-                    width: 36,
-                    height: 36,
-                    child: Icon(
-                      Icons.close,
-                      color: Colors.white,
-                      size: 20,
-                    ),
+                  icon: Icon(
+                    Icons.settings,
+                    color: Colors.white,
                   ),
                   onPressed: () {
-                    SystemNavigator.pop();
-                    if (Platform.isIOS) {
-                      exit(0); // Terminate the app on iOS
-                    } else {
-                      SystemNavigator.pop(); // Navigate back on Android
-                    }
+                    _scaffoldKey.currentState?.openDrawer();
                   },
                 ),
               ),
-            ],
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 10.0),
+                  child: IconButton(
+                    icon: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.red,
+                      ),
+                      alignment: Alignment.center,
+                      width: 36,
+                      height: 36,
+                      child: Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                    onPressed: () {
+                      SystemNavigator.pop();
+                      if (Platform.isIOS) {
+                        exit(0); // Terminate the app on iOS
+                      } else {
+                        SystemNavigator.pop(); // Navigate back on Android
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         drawer: SizedBox(
@@ -347,214 +349,218 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.zero,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: double.infinity,
-                          color: Color(0xFF2053B3),
-                          padding: EdgeInsets.only(top: 50, bottom: 20),
-                          child: Column(
-                            children: [
-                              Align(
-                                alignment: Alignment.center,
-                                child: CircleAvatar(
-                                  radius: 50,
-                                  backgroundColor: Colors.white,
-                                  backgroundImage: _profilePictureUrl != null
-                                      ? NetworkImage(_profilePictureUrl!)
-                                      : null,
-                                  child: _profilePictureUrl == null
-                                      ? FlutterLogo(size: 60)
-                                      : null,
-                                ),
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                _firstName != null && _surName != null
-                                    ? "$_firstName $_surName"
-                                    : "ユーザー名",
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Row(
-                            children: [
-                              Text(
-                                "言語",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(width: 25),
-                              GestureDetector(
-                                onTap: () => _updateLanguageFlag(1),
-                                child: Column(
-                                  children: [
-                                    Image.asset(
-                                      'assets/images/americanFlag.gif',
-                                      width: 40,
-                                      height: 40,
-                                    ),
-                                    if (_currentLanguageFlag == 1)
-                                      Container(
-                                        height: 2,
-                                        width: 40,
-                                        color: Colors.blue,
-                                      ),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(width: 30),
-                              GestureDetector(
-                                onTap: () => _updateLanguageFlag(2),
-                                child: Column(
-                                  children: [
-                                    Image.asset(
-                                      'assets/images/japaneseFlag.gif',
-                                      width: 40,
-                                      height: 40,
-                                    ),
-                                    if (_currentLanguageFlag == 2)
-                                      Container(
-                                        height: 2,
-                                        width: 40,
-                                        color: Colors.blue,
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "ユーザー",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 5),
-                              TextField(
-                                controller: _idController,
-                                decoration: InputDecoration(
-                                  hintText: "ID番号",
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
+            child: SafeArea(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            color: Color(0xFF2053B3),
+                            padding: EdgeInsets.only(top: 50, bottom: 20),
+                            child: Column(
+                              children: [
+                                Align(
+                                  alignment: Alignment.center,
+                                  child: CircleAvatar(
+                                    radius: 50,
+                                    backgroundColor: Colors.white,
+                                    backgroundImage: _profilePictureUrl != null
+                                        ? NetworkImage(_profilePictureUrl!)
+                                        : null,
+                                    child: _profilePictureUrl == null
+                                        ? FlutterLogo(size: 60)
+                                        : null,
                                   ),
                                 ),
-                              ),
-                              SizedBox(height: 10),
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: _saveIdNumber,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Color(0xFF2053B3),
-                                    padding: EdgeInsets.symmetric(vertical: 12),
-                                    shape: RoundedRectangleBorder(
+                                SizedBox(height: 10),
+                                Text(
+                                  _firstName != null && _surName != null
+                                      ? "$_firstName $_surName"
+                                      : "ユーザー名",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Row(
+                              children: [
+                                Text(
+                                  "言語",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(width: 25),
+                                GestureDetector(
+                                  onTap: () => _updateLanguageFlag(1),
+                                  child: Column(
+                                    children: [
+                                      Image.asset(
+                                        'assets/images/americanFlag.gif',
+                                        width: 40,
+                                        height: 40,
+                                      ),
+                                      if (_currentLanguageFlag == 1)
+                                        Container(
+                                          height: 2,
+                                          width: 40,
+                                          color: Colors.blue,
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(width: 30),
+                                GestureDetector(
+                                  onTap: () => _updateLanguageFlag(2),
+                                  child: Column(
+                                    children: [
+                                      Image.asset(
+                                        'assets/images/japaneseFlag.gif',
+                                        width: 40,
+                                        height: 40,
+                                      ),
+                                      if (_currentLanguageFlag == 2)
+                                        Container(
+                                          height: 2,
+                                          width: 40,
+                                          color: Colors.blue,
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "ユーザー",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 5),
+                                TextField(
+                                  controller: _idController,
+                                  decoration: InputDecoration(
+                                    hintText: "ID番号",
+                                    border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                   ),
-                                  child: Text(
-                                    "保存",
-                                    style: TextStyle(color: Colors.white, fontSize: 16),
+                                ),
+                                SizedBox(height: 10),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: _saveIdNumber,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Color(0xFF2053B3),
+                                      padding: EdgeInsets.symmetric(vertical: 12),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      "保存",
+                                      style: TextStyle(color: Colors.white, fontSize: 16),
+                                    ),
                                   ),
                                 ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        Text(
+                          "国",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(width: 25),
+                        GestureDetector(
+                          onTap: () => _updatePhOrJp("ph"),
+                          child: Column(
+                            children: [
+                              Image.asset(
+                                'assets/images/philippines.png',
+                                width: 40,
+                                height: 40,
                               ),
+                              if (_phOrJp == "ph")
+                                Container(
+                                  height: 2,
+                                  width: 40,
+                                  color: Colors.blue,
+                                ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: 30),
+                        GestureDetector(
+                          onTap: () => _updatePhOrJp("jp"),
+                          child: Column(
+                            children: [
+                              Image.asset(
+                                'assets/images/japan.png',
+                                width: 40,
+                                height: 40,
+                              ),
+                              if (_phOrJp == "jp")
+                                Container(
+                                  height: 2,
+                                  width: 40,
+                                  color: Colors.blue,
+                                ),
                             ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      Text(
-                        "国",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(width: 25),
-                      GestureDetector(
-                        onTap: () => _updatePhOrJp("ph"),
-                        child: Column(
-                          children: [
-                            Image.asset(
-                              'assets/images/philippines.png',
-                              width: 40,
-                              height: 40,
-                            ),
-                            if (_phOrJp == "ph")
-                              Container(
-                                height: 2,
-                                width: 40,
-                                color: Colors.blue,
-                              ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(width: 30),
-                      GestureDetector(
-                        onTap: () => _updatePhOrJp("jp"),
-                        child: Column(
-                          children: [
-                            Image.asset(
-                              'assets/images/japan.png',
-                              width: 40,
-                              height: 40,
-                            ),
-                            if (_phOrJp == "jp")
-                              Container(
-                                height: 2,
-                                width: 40,
-                                color: Colors.blue,
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
-        body: Stack(
-          children: [
-            if (_webUrl != null)
-              WebViewWidget(controller: _controller),
-            if (_isLoading)
-              LinearProgressIndicator(
-                value: _progress,
-                backgroundColor: Colors.grey[300],
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-              ),
-          ],
+        body: SafeArea(
+          child: Stack(
+            children: [
+              if (_webUrl != null)
+                WebViewWidget(controller: _controller),
+              if (_isLoading)
+                LinearProgressIndicator(
+                  value: _progress,
+                  backgroundColor: Colors.grey[300],
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                ),
+            ],
+          ),
         ),
       ),
     );
