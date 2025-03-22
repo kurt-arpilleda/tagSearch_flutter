@@ -11,17 +11,23 @@ class ApiService {
 
   static const Duration requestTimeout = Duration(seconds: 2);
 
-  Future<http.Response> _makeRequest(Uri uri, {Map<String, String>? headers}) async {
-    for (String apiUrl in apiUrls) {
-      try {
-        final fullUri = Uri.parse(apiUrl).resolve(uri.toString());
-        final response = await http.get(fullUri, headers: headers).timeout(requestTimeout);
-        return response;
-      } catch (e) {
-        print("Error accessing $apiUrl: $e");
+  Future<http.Response> _makeRequest(Uri uri, {Map<String, String>? headers, int retries = 5}) async {
+    for (int attempt = 1; attempt <= retries; attempt++) {
+      for (String apiUrl in apiUrls) {
+        try {
+          final fullUri = Uri.parse(apiUrl).resolve(uri.toString());
+          final response = await http.get(fullUri, headers: headers).timeout(requestTimeout);
+          return response;
+        } catch (e) {
+          print("Error accessing $apiUrl on attempt $attempt: $e");
+        }
+      }
+      // If all servers fail, wait for a short delay before retrying
+      if (attempt < retries) {
+        await Future.delayed(Duration(seconds: 2));
       }
     }
-    throw Exception("Both API URLs are unreachable");
+    throw Exception("All API URLs are unreachable after $retries attempts");
   }
 
   Future<String> fetchSoftwareLink(int linkID) async {
