@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../auto_update.dart';
 import 'package:http/http.dart' as http;
+import 'dart:io';
 
 class SoftwareWebViewScreenJP extends StatefulWidget {
   final int linkID;
@@ -329,6 +330,11 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
                   ),
                   onPressed: () {
                     SystemNavigator.pop();
+                    if (Platform.isIOS) {
+                      exit(0); // Terminate the app on iOS
+                    } else {
+                      SystemNavigator.pop(); // Navigate back on Android
+                    }
                   },
                 ),
               ),
