@@ -333,7 +333,6 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> {
                       ),
                     ),
                     onPressed: () {
-                      SystemNavigator.pop();
                       if (Platform.isIOS) {
                         exit(0); // Terminate the app on iOS
                       } else {
