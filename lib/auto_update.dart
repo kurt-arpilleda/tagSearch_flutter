@@ -17,9 +17,11 @@ class AutoUpdate {
 
   static const String versionPath = "V4/Others/Kurt/LatestVersionAPK/TagSearch/version.json";
   static const String apkPath = "V4/Others/Kurt/LatestVersionAPK/TagSearch/tagSearch.apk";
-  static const Duration requestTimeout = Duration(seconds: 2);
+  static const Duration requestTimeout = Duration(seconds: 3);
+  static const int maxRetries = 6;
+  static const Duration initialRetryDelay = Duration(seconds: 1);
 
-  Future<http.Response> _makeRequest(Uri uri, {Map<String, String>? headers, int retries = 5}) async {
+  Future<http.Response> _makeRequest(Uri uri, {Map<String, String>? headers, int retries = maxRetries}) async {
     for (int attempt = 1; attempt <= retries; attempt++) {
       for (String apiUrl in apiUrls) {
         try {
@@ -30,37 +32,50 @@ class AutoUpdate {
           print("Error accessing $apiUrl on attempt $attempt: $e");
         }
       }
-      // If all servers fail, wait for a short delay before retrying
+      // If all servers fail, wait for an exponential backoff delay before retrying
       if (attempt < retries) {
-        await Future.delayed(Duration(seconds: 2));
+        final delay = initialRetryDelay * (1 << (attempt - 1));
+        print("Waiting for ${delay.inSeconds} seconds before retrying...");
+        await Future.delayed(delay);
       }
     }
     throw Exception("All API URLs are unreachable after $retries attempts");
   }
 
   static Future<void> checkForUpdate(BuildContext context) async {
-    for (String apiUrl in apiUrls) {
-      try {
-        final response = await http.get(Uri.parse("$apiUrl$versionPath")).timeout(requestTimeout);
+    for (int attempt = 1; attempt <= maxRetries; attempt++) {
+      for (String apiUrl in apiUrls) {
+        try {
+          final response = await http.get(Uri.parse("$apiUrl$versionPath")).timeout(requestTimeout);
 
-        if (response.statusCode == 200) {
-          final Map<String, dynamic> versionInfo = jsonDecode(response.body);
-          final int latestVersionCode = versionInfo["versionCode"];
-          final String latestVersionName = versionInfo["versionName"];
-          final String releaseNotes = versionInfo["releaseNotes"];
+          if (response.statusCode == 200) {
+            final Map<String, dynamic> versionInfo = jsonDecode(response.body);
+            final int latestVersionCode = versionInfo["versionCode"];
+            final String latestVersionName = versionInfo["versionName"];
+            final String releaseNotes = versionInfo["releaseNotes"];
 
-          PackageInfo packageInfo = await PackageInfo.fromPlatform();
-          int currentVersionCode = int.parse(packageInfo.buildNumber);
+            PackageInfo packageInfo = await PackageInfo.fromPlatform();
+            int currentVersionCode = int.parse(packageInfo.buildNumber);
 
-          if (latestVersionCode > currentVersionCode) {
-            _showUpdateDialog(context, latestVersionName, releaseNotes, apiUrl);
-            break; // Exit the loop if a successful response is received
+            if (latestVersionCode > currentVersionCode) {
+              _showUpdateDialog(context, latestVersionName, releaseNotes, apiUrl);
+              return; // Exit the function if a successful response is received
+            } else {
+              // Fluttertoast.showToast(msg: "You are using the latest version.");
+              return; // Exit if no update is needed
+            }
           }
+        } catch (e) {
+          print("Error checking for update from $apiUrl on attempt $attempt: $e");
         }
-      } catch (e) {
-        print("Error checking for update from $apiUrl: $e");
+      }
+      if (attempt < maxRetries) {
+        final delay = initialRetryDelay * (1 << (attempt - 1));
+        print("Waiting for ${delay.inSeconds} seconds before retrying...");
+        await Future.delayed(delay);
       }
     }
+    Fluttertoast.showToast(msg: "Failed to check for updates after $maxRetries attempts.");
   }
 
   static void _showUpdateDialog(BuildContext context, String versionName, String releaseNotes, String apiUrl) {
@@ -87,9 +102,9 @@ class AutoUpdate {
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close the update dialog
-                _showDownloadProgressDialog(context, apiUrl); // Show the download progress dialog
-                _downloadAndInstallApk(context, apiUrl); // Start the download process
+                Navigator.of(context).pop();
+                _showDownloadProgressDialog(context, apiUrl);
+                _downloadAndInstallApk(context, apiUrl);
               },
               child: Text("Update"),
             ),
@@ -168,33 +183,40 @@ class AutoUpdate {
   }
 
   static Future<void> _downloadAndInstallApk(BuildContext context, String apiUrl) async {
-    try {
-      final Directory? externalDir = await getExternalStorageDirectory();
-      if (externalDir != null) {
-        final String apkFilePath = "${externalDir.path}/tagSearch.apk";
-        final File apkFile = File(apkFilePath);
+    for (int attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        final Directory? externalDir = await getExternalStorageDirectory();
+        if (externalDir != null) {
+          final String apkFilePath = "${externalDir.path}/tagSearch.apk";
+          final File apkFile = File(apkFilePath);
 
-        final request = http.Request('GET', Uri.parse("$apiUrl$apkPath"));
-        final http.StreamedResponse response = await request.send().timeout(requestTimeout);
+          final request = http.Request('GET', Uri.parse("$apiUrl$apkPath"));
+          final http.StreamedResponse response = await request.send().timeout(requestTimeout);
 
-        if (response.statusCode == 200) {
-          final fileSink = apkFile.openWrite();
-          await response.stream.pipe(fileSink);
-          await fileSink.close();
+          if (response.statusCode == 200) {
+            final fileSink = apkFile.openWrite();
+            await response.stream.pipe(fileSink);
+            await fileSink.close();
 
-          if (await apkFile.exists()) {
-            _installApk(context, apkFilePath); // Install the APK after download
-          } else {
-            Fluttertoast.showToast(msg: "Failed to save the APK file.");
+            if (await apkFile.exists()) {
+              _installApk(context, apkFilePath); // Install the APK after download
+              return; // Exit the function if the download is successful
+            } else {
+              Fluttertoast.showToast(msg: "Failed to save the APK file.");
+            }
           }
         }
+      } catch (e) {
+        print("Error downloading APK on attempt $attempt: $e");
+        if (attempt < maxRetries) {
+          final delay = initialRetryDelay * (1 << (attempt - 1)); // Exponential backoff
+          print("Waiting for ${delay.inSeconds} seconds before retrying...");
+          await Future.delayed(delay);
+        }
       }
-    } catch (e) {
-      print("Error downloading APK: $e");
-      Fluttertoast.showToast(msg: "Failed to download update.");
-    } finally {
-      Navigator.of(context).pop(); // Close the download progress dialog
     }
+    Fluttertoast.showToast(msg: "Failed to download update after $maxRetries attempts.");
+    Navigator.of(context).pop(); // Close the download progress dialog
   }
 
   static void _installApk(BuildContext context, String apkPath) async {
