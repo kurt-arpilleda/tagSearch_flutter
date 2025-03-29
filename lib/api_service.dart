@@ -71,7 +71,7 @@ class ApiService {
         } catch (e) {
           String errorMessage = "Error accessing $apiUrl on attempt $attempt";
           print(errorMessage);
-          _showToast(errorMessage);
+          // _showToast(errorMessage);
 
           // If the first URL fails and there's another URL to try, show a fallback message
           if (i == 0 && apiUrls.length > 1) {
