@@ -19,7 +19,7 @@ class SoftwareWebViewScreenJP extends StatefulWidget {
   _SoftwareWebViewScreenState createState() => _SoftwareWebViewScreenState();
 }
 
-class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
+class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> with WidgetsBindingObserver {
   late final WebViewController _controller;
   final ApiService apiService = ApiService();
   final ApiServiceJP apiServiceJP = ApiServiceJP();
@@ -28,7 +28,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
   String? _profilePictureUrl;
   String? _firstName;
   String? _surName;
-  String? _idNumber; // Added to store ID number from device
+  String? _idNumber;
   bool _isLoading = true;
   int? _currentLanguageFlag;
   double _progress = 0;
@@ -42,6 +42,31 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    _initializeWebViewController();
+    _fetchAndLoadUrl();
+    _loadCurrentLanguageFlag();
+    _loadPhOrJp();
+    _fetchDeviceInfo();
+
+    AutoUpdate.checkForUpdate(context);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _refreshAllData();
+    }
+  }
+
+  void _initializeWebViewController() {
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
@@ -65,16 +90,24 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> {
           },
         ),
       );
-
-    _fetchAndLoadUrl();
-    _loadCurrentLanguageFlag();
-    _loadPhOrJp();
-    _fetchDeviceInfo(); // New method to fetch device info and profile
-
-    // Check for updates
-    AutoUpdate.checkForUpdate(context);
   }
 
+  Future<void> _refreshAllData() async {
+    // Reset loading state
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Refresh all necessary data
+    await _loadPhOrJp();
+    await _loadCurrentLanguageFlag();
+    await _fetchDeviceInfo();
+    await _fetchAndLoadUrl();
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
   Future<void> _fetchDeviceInfo() async {
     try {
       String? deviceId = await UniqueIdentifier.serial;
