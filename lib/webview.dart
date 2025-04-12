@@ -50,7 +50,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> with Widg
     _loadPhOrJp();
     _fetchDeviceInfo();
 
-    AutoUpdate.checkForUpdate(context);
+    _checkForUpdates();
   }
 
   @override
@@ -63,6 +63,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> with Widg
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       _refreshAllData();
+      _checkForUpdates();
     }
   }
 
@@ -90,6 +91,14 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> with Widg
           },
         ),
       );
+  }
+  Future<void> _checkForUpdates() async {
+    try {
+      await AutoUpdate.checkForUpdate(context);
+    } catch (e) {
+      // Handle error if update check fails
+      debugPrint('Update check failed: $e');
+    }
   }
 
   Future<void> _refreshAllData() async {
