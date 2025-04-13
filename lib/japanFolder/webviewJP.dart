@@ -106,15 +106,41 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> with Wi
       _isLoading = true;
     });
 
-    // Refresh all necessary data
+    // Refresh all necessary data except the URL
     await _loadPhOrJp();
     await _loadCurrentLanguageFlag();
     await _fetchDeviceInfo();
-    await _fetchAndLoadUrl();
+
+    // Instead of fetching a new URL, just reload the current one
+    String? currentUrl = await _controller.currentUrl();
+    if (currentUrl != null) {
+      _controller.loadRequest(Uri.parse(currentUrl));
+    } else if (_webUrl != null) {
+      // Fallback to the stored URL if currentUrl is null
+      _controller.loadRequest(Uri.parse(_webUrl!));
+    }
 
     setState(() {
       _isLoading = false;
     });
+  }
+
+  Future<void> _fetchAndLoadUrl() async {
+    try {
+      String url = await apiServiceJP.fetchSoftwareLink(widget.linkID);
+      if (mounted) {
+        setState(() {
+          _webUrl = url;
+        });
+        _controller.loadRequest(Uri.parse(url));
+      }
+    } catch (e) {
+      debugPrint("Error fetching link: $e");
+      // If fetching fails, try to load the last known URL
+      if (_webUrl != null) {
+        _controller.loadRequest(Uri.parse(_webUrl!));
+      }
+    }
   }
   Future<void> _fetchDeviceInfo() async {
     try {
@@ -172,20 +198,6 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> with Wi
       return response.statusCode == 200;
     } catch (e) {
       return false;
-    }
-  }
-
-  Future<void> _fetchAndLoadUrl() async {
-    try {
-      String url = await apiServiceJP.fetchSoftwareLink(widget.linkID);
-      if (mounted) {
-        setState(() {
-          _webUrl = url;
-        });
-        _controller.loadRequest(Uri.parse(url));
-      }
-    } catch (e) {
-      debugPrint("Error fetching link: $e");
     }
   }
 
