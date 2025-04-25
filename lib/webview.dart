@@ -619,6 +619,27 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> with Widg
                               ],
                             ),
                           ),
+                          SizedBox(height: 20),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 27.0),
+                            child: Row(
+                              children: [
+                                Text(
+                                  "Manual",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(width: 15),
+                                IconButton(
+                                  icon: Icon(Icons.menu_book, size: 28),
+                                  iconSize: 28,
+                                  onPressed: () {  },
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
