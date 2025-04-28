@@ -117,7 +117,12 @@ class _PDFViewerScreenState extends State<PDFViewerScreen> {
         ),
         title: Text(
           widget.languageFlag == 2 ? '手引き' : 'Manual', // 2 is Japanese flag
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              overflow: TextOverflow.ellipsis,
+              fontWeight: FontWeight.bold
+          ),
         ),
         centerTitle: true,
       ),
@@ -130,7 +135,8 @@ class _PDFViewerScreenState extends State<PDFViewerScreen> {
         enableSwipe: true,
         swipeHorizontal: false,
         autoSpacing: true,
-        pageFling: true,
+        pageFling: false, // Disable page fling animation
+        pageSnap: false, // This is the key parameter for continuous scrolling
         onError: (error) {
           debugPrint(error.toString());
         },
