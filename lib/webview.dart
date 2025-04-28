@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:tag_search/pdfViewer.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'api_service.dart';
 import 'japanFolder/api_serviceJP.dart';
@@ -621,7 +622,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> with Widg
                           ),
                           SizedBox(height: 20),
                           Padding(
-                            padding: const EdgeInsets.only(left: 27.0),
+                            padding: const EdgeInsets.only(left: 29.0),
                             child: Row(
                               children: [
                                 Text(
@@ -635,7 +636,30 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> with Widg
                                 IconButton(
                                   icon: Icon(Icons.menu_book, size: 28),
                                   iconSize: 28,
-                                  onPressed: () {  },
+                                  onPressed: () async {
+                                    if (_idNumber == null || _currentLanguageFlag == null) return;
+
+                                    try {
+                                      final manualUrl = await apiService.fetchManualLink(widget.linkID, _currentLanguageFlag!);
+                                      final fileName = 'manual_${widget.linkID}_${_currentLanguageFlag}.pdf';
+
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => PDFViewerScreen(
+                                            pdfUrl: manualUrl,
+                                            fileName: fileName,
+                                          ),
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      Fluttertoast.showToast(
+                                        msg: "Error loading manual: ${e.toString()}",
+                                        toastLength: Toast.LENGTH_LONG,
+                                        gravity: ToastGravity.BOTTOM,
+                                      );
+                                    }
+                                  },
                                 ),
                               ],
                             ),
