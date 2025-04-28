@@ -649,6 +649,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> with Widg
                                           builder: (context) => PDFViewerScreen(
                                             pdfUrl: manualUrl,
                                             fileName: fileName,
+                                            languageFlag: _currentLanguageFlag!, // Add this line
                                           ),
                                         ),
                                       );

@@ -7,11 +7,13 @@ import 'package:path_provider/path_provider.dart';
 class PDFViewerScreen extends StatefulWidget {
   final String pdfUrl;
   final String fileName;
+  final int languageFlag;
 
   const PDFViewerScreen({
     Key? key,
     required this.pdfUrl,
     required this.fileName,
+    required this.languageFlag,
   }) : super(key: key);
 
   @override
@@ -113,9 +115,9 @@ class _PDFViewerScreenState extends State<PDFViewerScreen> {
           icon: const Icon(Icons.close, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'Manual',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          widget.languageFlag == 2 ? '手引き' : 'Manual', // 2 is Japanese flag
+          style: const TextStyle(color: Colors.white),
         ),
         centerTitle: true,
       ),
