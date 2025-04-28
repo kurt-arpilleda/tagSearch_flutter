@@ -16,8 +16,8 @@ class AutoUpdate {
     "http://126.209.7.246/"
   ];
 
-  static const String versionPath = "V4/Others/Kurt/LatestVersionAPK/TagSearch2/version.json";
-  static const String apkPathPrefix = "V4/Others/Kurt/LatestVersionAPK/TagSearch2/";
+  static const String versionPath = "V4/Others/Kurt/LatestVersionAPK/TagSearch/version.json";
+  static const String apkPathPrefix = "V4/Others/Kurt/LatestVersionAPK/TagSearch/";
 
   static const Duration requestTimeout = Duration(seconds: 2);
   static const int maxRetries = 6;
