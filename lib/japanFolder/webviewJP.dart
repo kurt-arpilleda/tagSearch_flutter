@@ -63,10 +63,13 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> with Wi
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      // _refreshAllData();
-      _checkForUpdates();
+      // Only check for updates if we're not already in the middle of an update
+      if (!AutoUpdate.isUpdating) {
+        _checkForUpdates();
+      }
     }
   }
+
 
   void _initializeWebViewController() {
     _controller = WebViewController()

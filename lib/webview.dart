@@ -63,8 +63,10 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> with Widg
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      // _refreshAllData();
-      _checkForUpdates();
+      // Only check for updates if we're not already in the middle of an update
+      if (!AutoUpdate.isUpdating) {
+        _checkForUpdates();
+      }
     }
   }
 
@@ -93,6 +95,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> with Widg
         ),
       );
   }
+
   Future<void> _checkForUpdates() async {
     try {
       await AutoUpdate.checkForUpdate(context);
@@ -101,7 +104,6 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> with Widg
       debugPrint('Update check failed: $e');
     }
   }
-
   // Future<void> _refreshAllData() async {
   //   // Reset loading state
   //   setState(() {
