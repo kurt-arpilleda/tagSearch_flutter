@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:tag_search/pdfViewer.dart';
+import 'pdfViewer.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'api_service.dart';
 import 'japanFolder/api_serviceJP.dart';
