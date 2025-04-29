@@ -623,10 +623,13 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> with Wi
                                       );
                                     } catch (e) {
                                       Fluttertoast.showToast(
-                                        msg: "Error loading manual: ${e.toString()}",
+                                        msg: _currentLanguageFlag == 2
+                                            ? "マニュアルの読み込み中にエラーが発生しました: ${e.toString()}"
+                                            : "Error loading manual: ${e.toString()}",
                                         toastLength: Toast.LENGTH_LONG,
                                         gravity: ToastGravity.BOTTOM,
                                       );
+
                                     }
                                   },
                                 ),
