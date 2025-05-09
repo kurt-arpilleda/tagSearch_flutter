@@ -609,15 +609,16 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> with Wi
 
                                     try {
                                       final manualUrl = await apiService.fetchManualLink(widget.linkID, _currentLanguageFlag!);
-                                      final fileName = 'manual_${widget.linkID}_${_currentLanguageFlag}.pdf';
+                                      final fileExtension = manualUrl.split('.').last.toLowerCase();
+                                      final fileName = 'manual_${widget.linkID}_${_currentLanguageFlag}.$fileExtension';
 
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => PDFViewerScreen(
-                                            pdfUrl: manualUrl,
+                                            fileUrl: manualUrl,
                                             fileName: fileName,
-                                            languageFlag: _currentLanguageFlag!, // Add this line
+                                            languageFlag: _currentLanguageFlag!,
                                           ),
                                         ),
                                       );
@@ -629,7 +630,6 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> with Wi
                                         toastLength: Toast.LENGTH_LONG,
                                         gravity: ToastGravity.BOTTOM,
                                       );
-
                                     }
                                   },
                                 ),
