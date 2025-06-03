@@ -548,75 +548,63 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> with Wi
 (function() {
   // Function to add barcode scanner button to an input field
   function addBarcodeScannerButton(element) {
-    // Check if the button already exists for this element
     if (element.dataset.hasBarcodeButton === 'true') return;
     
-    // Mark the element as having a button
     element.dataset.hasBarcodeButton = 'true';
     
-    // Create a container for the input and button
     const container = document.createElement('div');
     container.style.position = 'relative';
     container.style.display = 'inline-block';
     container.style.width = '100%';
     
-    // Wrap the input in the container
     element.parentNode.insertBefore(container, element);
     container.appendChild(element);
     
-    // Create the barcode scanner button
     const button = document.createElement('div');
-    button.innerHTML = '&#x1F4F7;'; // Barcode icon
-    button.style.cssText = `
-      position: absolute;
-      right: 8px;
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 9999;
-      background: #3452B4;
-      color: white;
-      padding: 4px;
-      border-radius: 4px;
-      font-size: 16px;
-      cursor: pointer;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-      font-family: Arial, sans-serif;
-      width: 24px;
-      height: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    `;
-    
+ button.innerHTML = '𝄃𝄂𝄂𝄀𝄁𝄃';
+button.style.cssText = `
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 9999;
+  background: #3452B4;
+  color: white;
+  padding: 0 4px;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  font-family: Arial, sans-serif;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
     button.onclick = function(e) {
       e.stopPropagation();
       window.flutter_inappwebview.callHandler('openBarcodeScanner');
     };
     
-    // Add the button to the container
     container.appendChild(button);
   }
   
-  // Function to scan and add buttons to all relevant input fields
   function scanAndAddButtons() {
     const inputs = document.querySelectorAll('input[type="text"], input[type="search"], input[type="email"], input[type="number"], textarea');
     inputs.forEach(function(input) {
-      // Skip if input is hidden or not visible
       if (input.offsetParent === null) return;
       
       addBarcodeScannerButton(input);
     });
   }
-  
-  // Initial scan
+
   scanAndAddButtons();
   
-  // Set up mutation observer to detect new inputs
   const observer = new MutationObserver(function(mutations) {
     scanAndAddButtons();
   });
   
-  // Observe the entire document for changes
   observer.observe(document.body, {
     childList: true,
     subtree: true,
@@ -624,7 +612,6 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> with Wi
     attributeFilter: ['style', 'class']
   });
   
-  // Also observe for dynamically shown inputs (like in modals)
   setInterval(scanAndAddButtons, 1000);
 })();
 ''';
