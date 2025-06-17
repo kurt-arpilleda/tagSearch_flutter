@@ -452,70 +452,65 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> with Widg
   Future<void> _injectBarcodeIntoWebView(String barcode) async {
     if (webViewController != null) {
       try {
-        // JavaScript to find the focused input and set its value, then trigger enter
         String jsCode = '''
-        (function() {
-          var activeElement = document.activeElement;
-          if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
-            // Set the value
-            activeElement.value = '$barcode';
-            
-            // Trigger input event
-            activeElement.dispatchEvent(new Event('input', { bubbles: true }));
-            
-            // Trigger change event
-            activeElement.dispatchEvent(new Event('change', { bubbles: true }));
-            
-            // Simulate Enter key press
-            var enterEvent = new KeyboardEvent('keydown', {
-              key: 'Enter',
-              code: 'Enter',
-              keyCode: 13,
-              which: 13,
-              bubbles: true
-            });
-            activeElement.dispatchEvent(enterEvent);
-            
-            var enterEventUp = new KeyboardEvent('keyup', {
-              key: 'Enter',
-              code: 'Enter',
-              keyCode: 13,
-              which: 13,
-              bubbles: true
-            });
-            activeElement.dispatchEvent(enterEventUp);
-            
-            return 'success';
-          } else {
-            // If no input is focused, try to find the first input field
-            var inputs = document.querySelectorAll('input[type="text"], input[type="search"], input[type="email"], input[type="number"], textarea');
-            if (inputs.length > 0) {
-              var firstInput = inputs[0];
-              firstInput.focus();
-              firstInput.value = '$barcode';
-              firstInput.dispatchEvent(new Event('input', { bubbles: true }));
-              firstInput.dispatchEvent(new Event('change', { bubbles: true }));
-              
-              var enterEvent = new KeyboardEvent('keydown', {
-                key: 'Enter',
-                code: 'Enter',
-                keyCode: 13,
-                which: 13,
-                bubbles: true
-              });
-              firstInput.dispatchEvent(enterEvent);
-              
-              return 'success_first_input';
-            }
-            return 'no_input_found';
-          }
-        })();
-      ''';
+    async function injectBarcode() {
+      const activeElement = document.activeElement;
+      const inputs = document.querySelectorAll('input[type="text"], input[type="search"], input[type="number"], textarea');
+      const targetInput = activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') 
+        ? activeElement 
+        : inputs.length > 0 ? inputs[0] : null;
+
+      if (!targetInput) return 'no_input_found';
+
+      // Focus and set value
+      targetInput.focus();
+      targetInput.value = '$barcode';
+
+      // Trigger input event
+      targetInput.dispatchEvent(new Event('input', { bubbles: true }));
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Trigger change event
+      targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Create and dispatch Enter key sequence with delays
+      const enterEvent = (type) => new KeyboardEvent(type, {
+        key: 'Enter',
+        code: 'Enter',
+        keyCode: 13,
+        which: 13,
+        bubbles: true,
+        cancelable: true
+      });
+
+      targetInput.dispatchEvent(enterEvent('keydown'));
+      await new Promise(resolve => setTimeout(resolve, 20));
+
+      targetInput.dispatchEvent(enterEvent('keypress'));
+      await new Promise(resolve => setTimeout(resolve, 20));
+
+      targetInput.dispatchEvent(enterEvent('keyup'));
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Try to submit form if exists
+      if (targetInput.form) {
+        targetInput.form.dispatchEvent(new Event('submit', { bubbles: true }));
+      }
+
+      // Blur the input field to close keyboard
+      await new Promise(resolve => setTimeout(resolve, 100));
+      targetInput.blur();
+
+      return 'success';
+    }
+
+    injectBarcode().then(result => result);
+    ''';
 
         final result = await webViewController!.evaluateJavascript(source: jsCode);
         print('Barcode injection result: $result');
 
-        // Show success message
         Fluttertoast.showToast(
           msg: _currentLanguageFlag == 2
               ? "バーコードが入力されました: $barcode"
@@ -545,80 +540,102 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> with Widg
     if (webViewController != null) {
       String jsCode = '''
 (function() {
-  // Function to add barcode scanner button to an input field
-  function addBarcodeScannerButton(element) {
-    if (element.dataset.hasBarcodeButton === 'true') return;
-    
-    element.dataset.hasBarcodeButton = 'true';
-    
-    const container = document.createElement('div');
-    container.style.position = 'relative';
-    container.style.display = 'inline-block';
-    container.style.width = '100%';
-    
-    element.parentNode.insertBefore(container, element);
-    container.appendChild(element);
-    
-    const button = document.createElement('div');
- button.innerHTML = '𝄃𝄂𝄂𝄀𝄁𝄃';
-button.style.cssText = `
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 9999;
-  background: #3452B4;
-  color: white;
-  padding: 0 4px;
-  border-radius: 4px;
-  font-size: 10px;
-  cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  font-family: Arial, sans-serif;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
+  let button;
+  let container;
 
-    button.onclick = function(e) {
-      e.stopPropagation();
-      window.flutter_inappwebview.callHandler('openBarcodeScanner');
-    };
+  function isVisible(elem) {
+    if (!elem || elem.offsetParent === null) return false;
     
-    container.appendChild(button);
-  }
-  
-  function scanAndAddButtons() {
-    const inputs = document.querySelectorAll('input[type="text"], input[type="search"], input[type="email"], input[type="number"], textarea');
-    inputs.forEach(function(input) {
-      if (input.offsetParent === null) return;
-      
-      addBarcodeScannerButton(input);
-    });
+    const rect = elem.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    const topElem = document.elementFromPoint(centerX, centerY);
+    return topElem === elem || elem.contains(topElem);
   }
 
-  scanAndAddButtons();
-  
-  const observer = new MutationObserver(function(mutations) {
-    scanAndAddButtons();
+  function updateBarcodeScannerButton() {
+    const input = document.getElementById('search');
+    if (!input) return;
+
+    const shouldShow = isVisible(input);
+
+    // If it should be visible and not already added
+    if (shouldShow && !input.dataset.hasBarcodeButton) {
+      input.dataset.hasBarcodeButton = 'true';
+
+      container = document.createElement('div');
+      container.style.position = 'relative';
+      container.style.display = 'inline-block';
+      container.style.width = '100%';
+
+      input.parentNode.insertBefore(container, input);
+      container.appendChild(input);
+
+      button = document.createElement('div');
+      button.innerHTML = '𝄃𝄂𝄂𝄀𝄁𝄃';
+      button.style.cssText = \`
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 9999;
+        background: #3452B4;
+        color: white;
+        padding: 0 4px;
+        border-radius: 4px;
+        font-size: 10px;
+        cursor: pointer;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        font-family: Arial, sans-serif;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      \`;
+
+      button.onclick = function(e) {
+        e.stopPropagation();
+        window.flutter_inappwebview.callHandler('openBarcodeScanner');
+      };
+
+      container.appendChild(button);
+    }
+
+    // If the input is now hidden or behind modal, remove the button
+    if (!shouldShow && button && container && container.parentNode) {
+      input.removeAttribute('data-has-barcode-button');
+      container.parentNode.insertBefore(input, container);
+      container.remove();
+      button = null;
+      container = null;
+    }
+  }
+
+  // Initial check
+  updateBarcodeScannerButton();
+
+  // Observe DOM for changes (e.g., modal open/close)
+  const observer = new MutationObserver(function() {
+    updateBarcodeScannerButton();
   });
-  
+
   observer.observe(document.body, {
     childList: true,
     subtree: true,
     attributes: true,
     attributeFilter: ['style', 'class']
   });
-  
-  setInterval(scanAndAddButtons, 1000);
+
+  // Also check every second in case changes aren't caught by observer
+  setInterval(updateBarcodeScannerButton, 1000);
 })();
 ''';
 
       try {
         await webViewController!.evaluateJavascript(source: jsCode);
       } catch (e) {
-        print('Error setting up input field detection: $e');
+        print('Error setting up input field detection: \$e');
       }
     }
   }
