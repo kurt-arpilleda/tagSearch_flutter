@@ -653,59 +653,66 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreen> with Widg
               backgroundColor: Color(0xFF3452B4),
               centerTitle: true,
               toolbarHeight: kToolbarHeight - 20,
-              leadingWidth: 120, // Increase the width for the leading widget
-              leading: Row(
-                mainAxisSize: MainAxisSize.min, // Use minimum space needed
-                children: [
-                  IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: BoxConstraints(), // Remove default constraints
-                    iconSize: 30, // Original size restored
-                    icon: Icon(
-                      Icons.settings,
-                      color: Colors.white,
+              leadingWidth: 120,
+              leading: SizedBox(
+                width: 120,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: BoxConstraints(),
+                      iconSize: 30,
+                      icon: Icon(
+                        Icons.settings,
+                        color: Colors.white,
+                      ),
+                      onPressed: () {
+                        _scaffoldKey.currentState?.openDrawer();
+                      },
                     ),
-                    onPressed: () {
-                      _scaffoldKey.currentState?.openDrawer();
-                    },
-                  ),
-                  IconButton(
-                    padding: EdgeInsets.only(left: 18.0), // Add more spacing between icons
-                    constraints: BoxConstraints(), // Remove default constraints
-                    iconSize: 29, // Original size restored
-                    icon: Icon(
-                      Icons.menu_book,
-                      color: Colors.amberAccent,
-                    ),
-                    onPressed: () async {
-                      if (_idNumber == null || _currentLanguageFlag == null) return;
+                    SizedBox(width: 16),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: BoxConstraints(),
+                      iconSize: 29.5,
+                      icon: Transform.translate(
+                        offset: Offset(0, -2), // move up by 2 pixels
+                        child: Icon(
+                          Icons.menu_book,
+                          color: Colors.amberAccent,
+                        ),
+                      ),
+                      onPressed: () async {
+                        if (_idNumber == null || _currentLanguageFlag == null) return;
 
-                      try {
-                        final manualUrl = await apiService.fetchManualLink(widget.linkID, _currentLanguageFlag!);
-                        final fileName = 'manual_${widget.linkID}_${_currentLanguageFlag}.pdf';
+                        try {
+                          final manualUrl = await apiService.fetchManualLink(widget.linkID, _currentLanguageFlag!);
+                          final fileName = 'manual_${widget.linkID}_${_currentLanguageFlag}.pdf';
 
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PDFViewerScreen(
-                              pdfUrl: manualUrl,
-                              fileName: fileName,
-                              languageFlag: _currentLanguageFlag!,
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PDFViewerScreen(
+                                pdfUrl: manualUrl,
+                                fileName: fileName,
+                                languageFlag: _currentLanguageFlag!,
+                              ),
                             ),
-                          ),
-                        );
-                      } catch (e) {
-                        Fluttertoast.showToast(
-                          msg: _currentLanguageFlag == 2
-                              ? "マニュアルの読み込み中にエラーが発生しました: ${e.toString()}"
-                              : "Error loading manual: ${e.toString()}",
-                          toastLength: Toast.LENGTH_LONG,
-                          gravity: ToastGravity.BOTTOM,
-                        );
-                      }
-                    },
-                  ),
-                ],
+                          );
+                        } catch (e) {
+                          Fluttertoast.showToast(
+                            msg: _currentLanguageFlag == 2
+                                ? "マニュアルの読み込み中にエラーが発生しました: ${e.toString()}"
+                                : "Error loading manual: ${e.toString()}",
+                            toastLength: Toast.LENGTH_LONG,
+                            gravity: ToastGravity.BOTTOM,
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                ),
               ),
               actions: [
                 // Close button
