@@ -688,7 +688,7 @@ class _SoftwareWebViewScreenState extends State<SoftwareWebViewScreenJP> with Wi
                         if (_idNumber == null || _currentLanguageFlag == null) return;
 
                         try {
-                          final manualUrl = await apiService.fetchManualLink(widget.linkID, _currentLanguageFlag!);
+                          final manualUrl = await apiServiceJP.fetchManualLink(widget.linkID, _currentLanguageFlag!);
                           final fileName = 'manual_${widget.linkID}_${_currentLanguageFlag}.pdf';
 
                           Navigator.push(
